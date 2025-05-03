@@ -1,0 +1,11 @@
+.backup-codes
+excluded data sets
+known_faces
+cache
+.venv
+*.csv
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.bmp
