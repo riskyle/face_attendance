@@ -1,107 +1,153 @@
-# Face Recognition Attendance Mobile App
+# Face Recognition Attendance System
 
-This is a mobile application for face recognition attendance system that works with the Python backend.
+A standalone face recognition system for tracking attendance using computer vision.
 
-## Setup Instructions
+## Overview
 
-### Backend Setup (Python Server)
+This system uses your computer's webcam to identify people in real-time, automatically marking their attendance. It combines YOLOv8 for face detection with face_recognition for facial recognition.
 
-1. Install the required Python packages:
+## Complete Installation Guide
+
+### Step 1: Clone the Repository
+
+```bash
+git clone https://github.com/riskyle/face-attendance.git
+cd face-attendance
+```
+
+### Step 2: Set Up Python Environment
+
+It's recommended to use a virtual environment:
+
+```bash
+# On Windows
+python -m venv .venv
+.venv\Scripts\activate
+
+# On macOS/Linux
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+### Step 3: Install Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-2. Run the Flask server:
+This will install all required packages:
+
+- torch and torchvision
+- opencv-python
+- numpy
+- face-recognition
+- pandas
+- ultralytics (YOLOv8)
+- Other supporting libraries
+
+### Step 4: Set Up the Face Database
+
+1. Create a folder structure for people you want to recognize:
+
+   ```
+   known_faces/
+   ├── Person_Name_1/
+   │   ├── photo1.jpg
+   │   └── photo2.jpg
+   ├── Person_Name_2/
+   │   ├── photo1.jpg
+   │   └── photo2.jpg
+   ```
+
+2. For each person:
+   - Create a folder with their name inside `known_faces/`
+   - Add 1-3 clear, well-lit photos of their face
+   - Photos should show the face clearly, ideally from different angles
+   - Supported formats: JPG, JPEG, PNG
+
+### Step 5: Run the Application
 
 ```bash
-python app.py
+python face_attendance.py
 ```
 
-3. Note down your computer's IP address (use `ipconfig` on Windows)
+The first run will:
 
-### Mobile App Setup (Flutter)
+1. Process and encode all face images (might take time)
+2. Cache the encodings for faster startup next time
+3. Start the webcam for real-time recognition
 
-1. Install Flutter SDK from [Flutter's official website](https://flutter.dev/docs/get-started/install)
+## Key Features
 
-2. Install Android Studio or Xcode (depending on your target platform)
+### Face Recognition & Attendance
 
-3. Clone this repository and navigate to the project directory
+- Real-time face detection and recognition
+- Automatic attendance marking with timestamps
+- CSV export of attendance records by date
+- Visual feedback with bounding boxes and confidence scores
 
-4. Install Flutter dependencies:
+### Face Encoding Caching
 
-```bash
-flutter pub get
-```
+The system uses an efficient caching mechanism for face encodings:
 
-5. Connect your mobile device or start an emulator
+- Face encodings are saved to disk after the first processing
+- Subsequent runs use the cached encodings, avoiding re-processing the same images
+- Cache is automatically invalidated when new images are added or modified
+- This significantly improves startup time after the initial run
 
-6. Run the app:
+## System Operation
 
-```bash
-flutter run
-```
+### Understanding the Display
 
-## Usage
+The system shows different colored bounding boxes:
 
-1. When you first launch the app, it will ask for camera permissions - grant them
+- **Yellow**: Initial face detection
+- **Yellow-Green**: Face recognized, confirming identity
+- **Green**: Identity confirmed, attendance marked
+- **Orange**: Unknown face
 
-2. Configure the server URL:
+### Daily Attendance Records
 
-   - Tap the settings icon in the top-right corner
-   - Enter your computer's IP address with port 5000
-   - Example: `http://192.168.1.100:5000`
-   - Tap Save
+Attendance is stored in CSV files:
 
-3. Using the app:
-   - The camera preview will show at the top
-   - Tap the camera button to capture and process a frame
-   - The attendance list will update automatically
-   - The list shows who has been marked present and at what time
+- Files are created in the `attendance/` folder
+- One file per day (format: `attendance_YYYY-MM-DD.csv`)
+- Each file contains names, times, and dates of attendance
 
-## Building for Distribution
+## System Requirements
 
-### Android
-
-```bash
-flutter build apk --release
-```
-
-The APK will be in `build/app/outputs/flutter-apk/app-release.apk`
-
-### iOS
-
-```bash
-flutter build ios --release
-```
-
-Then open the project in Xcode to create the IPA file
-
-## Requirements
-
-- Flutter SDK
-- Android Studio / Xcode
-- Python 3.11
-- All Python dependencies listed in requirements.txt
-- Mobile device with camera
-- Both mobile device and computer must be on the same network
+- Python 3.6 or higher
+- Webcam or USB camera
+- CUDA-compatible GPU recommended for better performance (but not required)
+- Required Python libraries (installed via requirements.txt)
 
 ## Troubleshooting
 
-1. If the app can't connect to the server:
+1. If the camera doesn't work:
 
-   - Check if both devices are on the same network
-   - Verify the server URL is correct
-   - Make sure the Python server is running
-   - Check if any firewall is blocking the connection
+   - Check if another application is using the camera
+   - Try restarting the application
+   - Ensure you have the correct camera drivers installed
 
-2. If the camera doesn't work:
+2. If face recognition isn't working properly:
 
-   - Make sure camera permissions are granted
-   - Try closing and reopening the app
-   - Check if the device's camera is working properly
-
-3. If face recognition isn't working:
    - Ensure good lighting conditions
-   - Make sure faces are clearly visible
-   - Check if known faces are properly added to the `known_faces` directory
+   - Make sure faces are clearly visible in training photos
+   - Add more photos of each person from different angles
+
+3. If the cache isn't working:
+
+   - Ensure the `cache` directory exists and is writable
+   - Delete the cache directory to force rebuilding if you encounter issues
+   - Check console output for any cache-related error messages
+
+4. If YOLOv8 model fails to load:
+   - The system will fall back to the standard YOLOv8 model
+   - For better face detection, download the `yolov8n-face.pt` model
+
+## Usage Tips
+
+- Press 'q' to exit the application
+- Recognition typically requires 2+ confirmations of the same face
+- Keep the face centered and well-lit for best results
+- Attendance is only marked once per person per day
